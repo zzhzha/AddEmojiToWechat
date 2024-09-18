@@ -9,6 +9,8 @@ import os
 import win32api
 import sys
 import threading
+import keyboard
+from subprocess import run
 
 
 # file = 'D:\\tmp\\test.txt\0D:\\tmp\\股票数据.xlsx\0\0'
@@ -38,41 +40,64 @@ def thread_it(func, *args, daemon: bool = True):
     t.daemon = daemon
     t.start()
 
-def getCookiesPath(self):
+
+def getImageFolderPath(initFilePath):
     cf = configparser.ConfigParser()
-    cf.read(self.cookiesConfigIniFile, encoding='utf-8')
-    cookiesPath = cf.get('Path', 'imageFolderPath')
-    if not os.path.exists(cookiesPath):
+    cf.read(initFilePath, encoding='utf-8')
+    imageFolderPath = cf.get('Path', 'imageFolderPath')
+    if not os.path.exists(imageFolderPath):
         thread_it(win32api.MessageBox, 0, "请先在ini填写图片文件夹路径", '错误', win32con.MB_ICONWARNING, daemon=False)
         sys.exit()
-    return cookiesPath
+    return imageFolderPath
 
-PimageFolderPathaths = getCookiesPath()
-win32clipboard.OpenClipboard()
-win32clipboard.EmptyClipboard()
-win32clipboard.SetClipboardText(filePaths, win32con.CF_UNICODETEXT)
-text = win32clipboard.GetClipboardData()
-win32clipboard.CloseClipboard()
 
+usualImageFormat = ['.jpg', '.png', '.jpeg', '.gif', '.bmp']
+initFilePath = '.\\config.ini'
+imageFolderPath = getImageFolderPath(initFilePath)
+# 图片的完整路径
+imagesPathList = [os.path.join(imageFolderPath, i) for i in os.listdir(imageFolderPath) if
+                  os.path.isfile(os.path.join(imageFolderPath, i)) if
+                  os.path.splitext(i)[1].lower() in usualImageFormat]
 control = pynput.keyboard.Controller()
 
+print(imagesPathList)
 
-notepadWindow = auto.WindowControl(Depth=1, ClassName='ChatWnd', Name='文件传输助手')
-notepadWindow.SetActive()
-notepadWindow.SetTopmost(True)
-sendFilesButton = notepadWindow.ButtonControl(depth=11, Name='发送文件')
-sendFilesButton.Click(simulateMove=False)
-getFilesDialogWindow = notepadWindow.WindowControl(Depth=1, Name='打开')
-time.sleep(1)
-# 打开文件对话框时，输入位置直接定位到下方的输入栏了
-control.type(filePaths)
-control.press(pynput.keyboard.Key.enter)
-time.sleep(1)
-control.press(pynput.keyboard.Key.enter)
+imagesPathConvertedList=[]
+for i in imagesPathList:
+    if os.path.splitext(i)[1].lower() != '.gif':
+        print(os.path.splitext(i))
+        imageConvertedPath = f'{os.path.splitext(i)[0]}_converted.gif'
+        os.system(f'ffmpeg -i {i} {imageConvertedPath}')
+        os.remove(i)
+        imagesPathConvertedList.append(imageConvertedPath)
+    else:
+        imagesPathConvertedList.append(i)
+print(imagesPathConvertedList)
+for imageConvertedPath in imagesPathConvertedList:
+
+
+    win32clipboard.OpenClipboard()
+    win32clipboard.EmptyClipboard()
+    win32clipboard.SetClipboardText(imageConvertedPath, win32con.CF_UNICODETEXT)
+    text = win32clipboard.GetClipboardData()
+    win32clipboard.CloseClipboard()
 
 
 
-
+    notepadWindow = auto.WindowControl(Depth=1, ClassName='ChatWnd', Name='文件传输助手')
+    notepadWindow.SetActive()
+    notepadWindow.SetTopmost(True)
+    sendFilesButton = notepadWindow.ButtonControl(depth=11, Name='发送文件')
+    sendFilesButton.Click(simulateMove=False)
+    getFilesDialogWindow = notepadWindow.WindowControl(Depth=1, Name='打开')
+    time.sleep(1)
+    # 打开文件对话框时，输入位置直接定位到下方的输入栏了
+    # control.type(imageConvertedPath)
+    keyboard.press_and_release('ctrl+v')
+    # control.type(text)
+    control.press(pynput.keyboard.Key.enter)
+    time.sleep(1)
+    control.press(pynput.keyboard.Key.enter)
 
 
 # cancelButton=getFilesDialogWindow.ButtonControl(Name='取消',ClassName='Button',depth=1)
