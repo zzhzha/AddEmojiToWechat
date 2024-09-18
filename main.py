@@ -4,6 +4,13 @@ import win32clipboard
 import win32con
 import pynput
 import time
+import configparser
+import os
+import win32api
+import sys
+import threading
+
+
 # file = 'D:\\tmp\\test.txt\0D:\\tmp\\股票数据.xlsx\0\0'
 # data = file.encode("U16")[2:]
 #
@@ -26,9 +33,21 @@ import time
 #     elif k == auto.ClipboardFormat.CF_BITMAP:
 #         bmp = auto.GetClipboardBitmap()
 #         print("位图：", bmp)
+def thread_it(func, *args, daemon: bool = True):
+    t = threading.Thread(target=func, args=args)
+    t.daemon = daemon
+    t.start()
 
+def getCookiesPath(self):
+    cf = configparser.ConfigParser()
+    cf.read(self.cookiesConfigIniFile, encoding='utf-8')
+    cookiesPath = cf.get('Path', 'imageFolderPath')
+    if not os.path.exists(cookiesPath):
+        thread_it(win32api.MessageBox, 0, "请先在ini填写图片文件夹路径", '错误', win32con.MB_ICONWARNING, daemon=False)
+        sys.exit()
+    return cookiesPath
 
-filePaths = r'C:\Users\10490\Desktop\result.gif'
+PimageFolderPathaths = getCookiesPath()
 win32clipboard.OpenClipboard()
 win32clipboard.EmptyClipboard()
 win32clipboard.SetClipboardText(filePaths, win32con.CF_UNICODETEXT)
