@@ -1,4 +1,3 @@
-import subprocess
 import uiautomation as auto
 import win32clipboard
 import win32con
@@ -10,7 +9,6 @@ import win32api
 import sys
 import threading
 import keyboard
-from subprocess import run
 
 
 # file = 'D:\\tmp\\test.txt\0D:\\tmp\\股票数据.xlsx\0\0'
@@ -90,13 +88,12 @@ for imageConvertedPath in imagesPathConvertedList:
     sendFilesButton = notepadWindow.ButtonControl(depth=11, Name='发送文件')
     sendFilesButton.Click(simulateMove=False)
     getFilesDialogWindow = notepadWindow.WindowControl(Depth=1, Name='打开')
-    time.sleep(1)
+    time.sleep(0.5)
     # 打开文件对话框时，输入位置直接定位到下方的输入栏了
-    # control.type(imageConvertedPath)
     keyboard.press_and_release('ctrl+v')
-    # control.type(text)
+    time.sleep(0.5)
     control.press(pynput.keyboard.Key.enter)
-    time.sleep(1)
+    time.sleep(0.5)
     control.press(pynput.keyboard.Key.enter)
 
 
