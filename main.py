@@ -48,7 +48,6 @@ def getImageFolderPath(initFilePath):
         sys.exit()
     return imageFolderPath
 
-
 usualImageFormat = ['.jpg', '.png', '.jpeg', '.gif', '.bmp']
 initFilePath = '.\\config.ini'
 imageFolderPath = getImageFolderPath(initFilePath)
@@ -58,29 +57,25 @@ imagesPathList = [os.path.join(imageFolderPath, i) for i in os.listdir(imageFold
                   os.path.splitext(i)[1].lower() in usualImageFormat]
 control = pynput.keyboard.Controller()
 
-print(imagesPathList)
+# print(imagesPathList)
 
-imagesPathConvertedList=[]
+imagesPathConvertedList = []
 for i in imagesPathList:
     if os.path.splitext(i)[1].lower() != '.gif':
-        print(os.path.splitext(i))
+        # print(os.path.splitext(i))
         imageConvertedPath = f'{os.path.splitext(i)[0]}_converted.gif'
         os.system(f'ffmpeg -i {i} {imageConvertedPath}')
         os.remove(i)
         imagesPathConvertedList.append(imageConvertedPath)
     else:
         imagesPathConvertedList.append(i)
-print(imagesPathConvertedList)
+# print(imagesPathConvertedList)
 for imageConvertedPath in imagesPathConvertedList:
-
-
     win32clipboard.OpenClipboard()
     win32clipboard.EmptyClipboard()
     win32clipboard.SetClipboardText(imageConvertedPath, win32con.CF_UNICODETEXT)
     text = win32clipboard.GetClipboardData()
     win32clipboard.CloseClipboard()
-
-
 
     notepadWindow = auto.WindowControl(Depth=1, ClassName='ChatWnd', Name='文件传输助手')
     notepadWindow.SetActive()
@@ -95,7 +90,6 @@ for imageConvertedPath in imagesPathConvertedList:
     control.press(pynput.keyboard.Key.enter)
     time.sleep(0.5)
     control.press(pynput.keyboard.Key.enter)
-
 
 # cancelButton=getFilesDialogWindow.ButtonControl(Name='取消',ClassName='Button',depth=1)
 # # cancelButton.Click(simulateMove=True)
