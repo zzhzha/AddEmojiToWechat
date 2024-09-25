@@ -1,69 +1,75 @@
-import uiautomation as auto
-import win32clipboard
-import win32con
-import pynput
 import time
-import configparser
-import os
-import win32api
-import sys
-import threading
-import keyboard
+import uiautomation as auto
+from uiautomation.uiautomation import Bitmap
+import win32clipboard
+from ctypes import *
 
 
-def thread_it(func, *args, daemon: bool = True):
-    t = threading.Thread(target=func, args=args)
-    t.daemon = daemon
-    t.start()
+class DROPFILES(Structure):
+    _fields_ = [
+        ("pFiles", c_uint),
+        ("x", c_long),
+        ("y", c_long),
+        ("fNC", c_int),
+        ("fWide", c_bool),
+    ]
 
 
-def getImageFolderPath(initFilePath):
-    cf = configparser.ConfigParser()
-    cf.read(initFilePath, encoding='utf-8')
-    imageFolderPath = cf.get('Path', 'imageFolderPath')
-    if not os.path.exists(imageFolderPath):
-        thread_it(win32api.MessageBox, 0, "请先在ini填写图片文件夹路径", '错误', win32con.MB_ICONWARNING, daemon=False)
-        sys.exit()
-    return imageFolderPath
-
-usualImageFormat = ['.jpg', '.png', '.jpeg', '.gif', '.bmp']
-initFilePath = '.\\config.ini'
-imageFolderPath = getImageFolderPath(initFilePath)
-# 图片的完整路径
-imagesPathList = [os.path.join(imageFolderPath, i) for i in os.listdir(imageFolderPath) if
-                  os.path.isfile(os.path.join(imageFolderPath, i)) if
-                  os.path.splitext(i)[1].lower() in usualImageFormat]
-control = pynput.keyboard.Controller()
+pDropFiles = DROPFILES()
+pDropFiles.pFiles = sizeof(DROPFILES)
+pDropFiles.fWide = True
+matedata = bytes(pDropFiles)
 
 
-imagesPathConvertedList = []
-for i in imagesPathList:
-    if os.path.splitext(i)[1].lower() != '.gif':
-        imageConvertedPath = f'{os.path.splitext(i)[0]}_converted.gif'
-        os.system(f'ffmpeg -i {i} {imageConvertedPath}')
-        os.remove(i)
-        imagesPathConvertedList.append(imageConvertedPath)
-    else:
-        imagesPathConvertedList.append(i)
-for imageConvertedPath in imagesPathConvertedList:
+def setClipboardFiles(paths):
+    files = ("\0".join(paths)).replace("/", "\\")
+    data = files.encode("U16")[2:]+b"\0\0"
     win32clipboard.OpenClipboard()
-    win32clipboard.EmptyClipboard()
-    win32clipboard.SetClipboardText(imageConvertedPath, win32con.CF_UNICODETEXT)
-    text = win32clipboard.GetClipboardData()
-    win32clipboard.CloseClipboard()
+    try:
+        win32clipboard.EmptyClipboard()
+        win32clipboard.SetClipboardData(
+            win32clipboard.CF_HDROP, matedata+data)
+    finally:
+        win32clipboard.CloseClipboard()
 
-    notepadWindow = auto.WindowControl(Depth=1, ClassName='ChatWnd', Name='文件传输助手')
-    notepadWindow.SetActive()
-    notepadWindow.SetTopmost(True)
-    sendFilesButton = notepadWindow.ButtonControl(depth=11, Name='发送文件')
-    sendFilesButton.Click(simulateMove=False)
-    getFilesDialogWindow = notepadWindow.WindowControl(Depth=1, Name='打开')
-    time.sleep(0.5)
-    # 打开文件对话框时，输入位置直接定位到下方的输入栏了
-    keyboard.press_and_release('ctrl+v')
-    time.sleep(0.5)
-    control.press(pynput.keyboard.Key.enter)
-    time.sleep(0.5)
-    control.press(pynput.keyboard.Key.enter)
-    print(f'已发送文件：{imageConvertedPath}')
 
+def setClipboardFile(file):
+    setClipboardFiles([file])
+
+
+def readClipboardFilePaths():
+    win32clipboard.OpenClipboard()
+    paths = None
+    try:
+        return win32clipboard.GetClipboardData(win32clipboard.CF_HDROP)
+    finally:
+        win32clipboard.CloseClipboard()
+
+
+wechatWindow = auto.WindowControl(
+    searchDepth=1, Name="微信", ClassName='WeChatMainWndForPC')
+wechatWindow.SetActive()
+search = wechatWindow.EditControl(Name='搜索')
+edit = wechatWindow.EditControl(Name='输入')
+messages = wechatWindow.ListControl(Name='消息')
+sendButton = wechatWindow.ButtonControl(Name='发送(S)')
+
+
+def selectSessionFromName(name, wait_time=0.1):
+    search.Click()
+    auto.SetClipboardText(name)
+    edit.SendKeys('{Ctrl}v')
+    # 等待微信索引搜索跟上
+    time.sleep(wait_time)
+    search.SendKeys("{Enter}")
+
+
+def send_msg(content, msg_type=1):
+    if msg_type == 1:
+        auto.SetClipboardText(content)
+    elif msg_type == 2:
+        auto.SetClipboardBitmap(Bitmap.FromFile(content))
+    elif msg_type == 3:
+        setClipboardFile(content)
+    edit.SendKeys('{Ctrl}v')
+    sendButton.Click()
