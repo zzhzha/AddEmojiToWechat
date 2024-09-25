@@ -65,4 +65,5 @@ for imageConvertedPath in imagesPathConvertedList:
     control.press(pynput.keyboard.Key.enter)
     time.sleep(0.5)
     control.press(pynput.keyboard.Key.enter)
+    print(f'已发送文件：{imageConvertedPath}')
 
