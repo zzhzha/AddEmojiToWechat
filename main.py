@@ -17,13 +17,15 @@ class DROPFILES(Structure):
 
 pDropFiles = DROPFILES()
 pDropFiles.pFiles = sizeof(DROPFILES)
-pDropFiles.fWide = True
+# pDropFiles.fWide = True
+pDropFiles.fWide = False
+
 matedata = bytes(pDropFiles)
 
 
 def setClipboardFiles(paths):
     files = ("\0".join(paths)).replace("/", "\\")
-    data = files.encode("U16")[2:]+b"\0\0"
+    data = files.encode("936") + b"\0\0"
     win32clipboard.OpenClipboard()
     try:
         win32clipboard.EmptyClipboard()
@@ -73,3 +75,10 @@ def send_msg(content, msg_type=1):
         setClipboardFile(content)
     edit.SendKeys('{Ctrl}v')
     sendButton.Click()
+
+name = "文件传输助手"
+selectSessionFromName(name)
+filename = r"D:\zhang_files\靓图\进击的巨人图\QQ截图20200530120208.png"
+send_msg(filename, msg_type=3)
+# filename = "D:/ZkInspector.jar"
+# send_msg(filename, msg_type=3)
