@@ -11,6 +11,9 @@ import threading
 import keyboard
 
 
+# Python解释器版本3.12
+
+
 def thread_it(func, *args, daemon: bool = True):
     t = threading.Thread(target=func, args=args)
     t.daemon = daemon
@@ -26,6 +29,7 @@ def getImageFolderPath(initFilePath):
         sys.exit()
     return imageFolderPath
 
+
 usualImageFormat = ['.jpg', '.png', '.jpeg', '.gif', '.bmp']
 initFilePath = '.\\config.ini'
 imageFolderPath = getImageFolderPath(initFilePath)
@@ -34,7 +38,6 @@ imagesPathList = [os.path.join(imageFolderPath, i) for i in os.listdir(imageFold
                   os.path.isfile(os.path.join(imageFolderPath, i)) if
                   os.path.splitext(i)[1].lower() in usualImageFormat]
 control = pynput.keyboard.Controller()
-
 
 imagesPathConvertedList = []
 for i in imagesPathList:
@@ -65,4 +68,3 @@ for imageConvertedPath in imagesPathConvertedList:
     control.press(pynput.keyboard.Key.enter)
     time.sleep(0.5)
     control.press(pynput.keyboard.Key.enter)
-
