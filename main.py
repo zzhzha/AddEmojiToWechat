@@ -68,3 +68,27 @@ for imageConvertedPath in imagesPathConvertedList:
     control.press(pynput.keyboard.Key.enter)
     time.sleep(0.5)
     control.press(pynput.keyboard.Key.enter)
+    time.sleep(0.5)
+    informationListControl = notepadWindow.ListControl(Depth=9,Name='消息')
+    time.sleep(0.5)
+    image = informationListControl.GetLastChildControl()
+    time.sleep(0.5)
+    image.Click(simulateMove=True)
+    time.sleep(0.5)
+    # Application键是Windows系统的特殊键，为书页键，效果为右键菜单
+    keyboard.send('Application')
+    time.sleep(0.5)
+    keyboard.send('down')
+    time.sleep(0.5)
+    keyboard.send('enter')
+    time.sleep(0.5)
+
+
+
+
+
+
+
+    # informationListControl.RightClick(simulateMove=True)
+
+
