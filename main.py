@@ -83,6 +83,8 @@ for imageConvertedPath in imagesPathConvertedList:
     MenuItemControl = notepadWindow.MenuItemControl(Name='添加到表情', depth=4)
     time.sleep(0.5)
     MenuItemControl.Click(simulateMove=True)
+    time.sleep(0.5)
+
     # imageButtonControl = informationListControl.ButtonControl(Depth=6)
     # time.sleep(0.5)
     # imageButtonControl.RightClick(simulateMove=True)
