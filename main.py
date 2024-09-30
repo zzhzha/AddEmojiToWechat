@@ -76,12 +76,13 @@ for imageConvertedPath in imagesPathConvertedList:
     time.sleep(0.5)
     image.Click(simulateMove=True)
     time.sleep(0.5)
-
     # Application键是Windows系统的特殊键，为书页键，效果为右键菜单
     keyboard.send('Application')
     time.sleep(0.5)
     MenuItemControl = notepadWindow.MenuItemControl(Name='添加到表情', depth=4)
-    time.sleep(0.5)
+    if not auto.WaitForExist(MenuItemControl, 3):
+        keyboard.press_and_release('Esc')
+        continue
     MenuItemControl.Click(simulateMove=True)
     time.sleep(0.5)
 
