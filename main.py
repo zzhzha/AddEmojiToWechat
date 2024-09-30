@@ -49,6 +49,7 @@ for i in imagesPathList:
     else:
         imagesPathConvertedList.append(i)
 for imageConvertedPath in imagesPathConvertedList:
+    print(imageConvertedPath)
     win32clipboard.OpenClipboard()
     win32clipboard.EmptyClipboard()
     win32clipboard.SetClipboardText(imageConvertedPath, win32con.CF_UNICODETEXT)
@@ -69,26 +70,25 @@ for imageConvertedPath in imagesPathConvertedList:
     time.sleep(0.5)
     control.press(pynput.keyboard.Key.enter)
     time.sleep(0.5)
-    informationListControl = notepadWindow.ListControl(Depth=9,Name='消息')
+    informationListControl = notepadWindow.ListControl(Depth=9, Name='消息')
     time.sleep(0.5)
     image = informationListControl.GetLastChildControl()
     time.sleep(0.5)
     image.Click(simulateMove=True)
     time.sleep(0.5)
+
     # Application键是Windows系统的特殊键，为书页键，效果为右键菜单
     keyboard.send('Application')
     time.sleep(0.5)
-    keyboard.send('down')
+    MenuItemControl = notepadWindow.MenuItemControl(Name='添加到表情', depth=4)
     time.sleep(0.5)
-    keyboard.send('enter')
-    time.sleep(0.5)
-
-
-
-
-
-
+    MenuItemControl.Click(simulateMove=True)
+    # imageButtonControl = informationListControl.ButtonControl(Depth=6)
+    # time.sleep(0.5)
+    # imageButtonControl.RightClick(simulateMove=True)
+    # keyboard.send('down')
+    # time.sleep(0.5)
+    # keyboard.send('enter')
+    # time.sleep(0.5)
 
     # informationListControl.RightClick(simulateMove=True)
-
-
