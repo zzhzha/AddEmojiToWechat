@@ -1,7 +1,7 @@
 import uiautomation as auto
 import win32clipboard
 import win32con
-import pynput
+# import pynput
 import time
 import configparser
 import os
@@ -37,7 +37,6 @@ imageFolderPath = getImageFolderPath(initFilePath)
 imagesPathList = [os.path.join(imageFolderPath, i) for i in os.listdir(imageFolderPath) if
                   os.path.isfile(os.path.join(imageFolderPath, i)) if
                   os.path.splitext(i)[1].lower() in usualImageFormat]
-control = pynput.keyboard.Controller()
 
 imagesPathConvertedList = []
 for i in imagesPathList:
@@ -66,15 +65,15 @@ for imageConvertedPath in imagesPathConvertedList:
     # 打开文件对话框时，输入位置直接定位到下方的输入栏了
     keyboard.press_and_release('ctrl+v')
     time.sleep(0.5)
-    control.press(pynput.keyboard.Key.enter)
+    keyboard.press_and_release('enter')
     time.sleep(0.5)
-    control.press(pynput.keyboard.Key.enter)
+    keyboard.press_and_release('enter')
     time.sleep(0.5)
     informationListControl = notepadWindow.ListControl(Depth=9, Name='消息')
     time.sleep(0.5)
     image = informationListControl.GetLastChildControl()
     time.sleep(0.5)
-    image.Click(simulateMove=True)
+    image.Click()
     time.sleep(0.5)
     # Application键是Windows系统的特殊键，为书页键，效果为右键菜单
     keyboard.send('Application')
@@ -85,13 +84,3 @@ for imageConvertedPath in imagesPathConvertedList:
         continue
     MenuItemControl.Click(simulateMove=True)
     time.sleep(0.5)
-
-    # imageButtonControl = informationListControl.ButtonControl(Depth=6)
-    # time.sleep(0.5)
-    # imageButtonControl.RightClick(simulateMove=True)
-    # keyboard.send('down')
-    # time.sleep(0.5)
-    # keyboard.send('enter')
-    # time.sleep(0.5)
-
-    # informationListControl.RightClick(simulateMove=True)
