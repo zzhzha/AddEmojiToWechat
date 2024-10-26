@@ -56,31 +56,38 @@ for imageConvertedPath in imagesPathConvertedList:
     win32clipboard.CloseClipboard()
 
     notepadWindow = auto.WindowControl(Depth=1, ClassName='ChatWnd', Name='文件传输助手')
+    if not auto.WaitForExist(notepadWindow, 3):
+        print('文件传输助手窗口未找到，请打开文件传输助手窗口')
+        break
     notepadWindow.SetActive()
     notepadWindow.SetTopmost(True)
+    time.sleep(1)
     sendFilesButton = notepadWindow.ButtonControl(depth=11, Name='发送文件')
-    sendFilesButton.Click(simulateMove=False)
+    sendFilesButton.Click(simulateMove=True)
+    time.sleep(1)
     getFilesDialogWindow = notepadWindow.WindowControl(Depth=1, Name='打开')
-    time.sleep(0.5)
+    time.sleep(1)
     # 打开文件对话框时，输入位置直接定位到下方的输入栏了
     keyboard.press_and_release('ctrl+v')
-    time.sleep(0.5)
+    time.sleep(1)
     keyboard.press_and_release('enter')
-    time.sleep(0.5)
+    time.sleep(1)
     keyboard.press_and_release('enter')
-    time.sleep(0.5)
+    time.sleep(1)
     informationListControl = notepadWindow.ListControl(Depth=9, Name='消息')
-    time.sleep(0.5)
+    time.sleep(1)
     image = informationListControl.GetLastChildControl()
-    time.sleep(0.5)
+    time.sleep(1)
     image.Click()
-    time.sleep(0.5)
+    time.sleep(1)
     # Application键是Windows系统的特殊键，为书页键，效果为右键菜单
     keyboard.send('Application')
-    time.sleep(0.5)
+    time.sleep(1)
     MenuItemControl = notepadWindow.MenuItemControl(Name='添加到表情', depth=4)
+    time.sleep(1)
+
     if not auto.WaitForExist(MenuItemControl, 3):
         keyboard.press_and_release('Esc')
         continue
     MenuItemControl.Click(simulateMove=True)
-    time.sleep(0.5)
+    time.sleep(1)
