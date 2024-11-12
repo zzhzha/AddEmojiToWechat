@@ -9,16 +9,28 @@ import win32api
 import sys
 import threading
 import keyboard
+from PIL import Image
 
 
 # Python解释器版本3.12
 
 class AddEmojiToWechat:
     def __init__(self):
-        self._usualImageFormat = ['.jpg', '.png', '.jpeg', '.gif', '.bmp']
-        self._initFilePath = self._get_init_file_path()
-        self._imageFolderPath = self._get_image_folder_path()
-        self._imagesPathConvertedList = self._get_images_path_converted_list()
+        self._usual_image_format_list = ['.jpg', '.png', '.jpeg', '.gif', '.bmp']
+
+        self._rootPath = os.path.dirname(os.path.abspath(__file__))
+        self._config_file_path = self._get_config_file_path()
+
+        # 原始图片的文件夹路径
+        self._original_images_folder_path = self._get_images_folder_path(type='original')
+        # 转换后的图片的文件夹路径
+        self._converted_images_folder_path = self._get_images_folder_path(type='converted')
+        # 转换后的图片路径列表
+        self._converted_images_path_list = self._get_converted_images_path_list()
+
+        # 转换图片并将转换后的图片复制到相应文件夹中
+        self._convert_images()
+
         self._add_emoji_to_wechat()
 
     @staticmethod
@@ -27,42 +39,39 @@ class AddEmojiToWechat:
         t.daemon = daemon
         t.start()
 
-
-    def _get_image_folder_path(self):
+    def _get_images_folder_path(self, type) -> str:
         cf = configparser.ConfigParser()
-        cf.read(self._initFilePath, encoding='utf-8')
-        imageFolderPath = cf.get('Path', 'imageFolderPath')
+        cf.read(self._config_file_path, encoding='utf-8')
+        if type == 'original':
+
+            imageFolderPath = cf.get('Path', 'imageFolderPath')
+        elif type == 'converted':
+            imageFolderPath = cf.get('Path', 'imageConvertFolderPath')
+        else:
+            raise ValueError('type参数错误')
         if not os.path.exists(imageFolderPath):
             self.thread_it(win32api.MessageBox, 0, "请先在ini填写图片文件夹路径", '错误', win32con.MB_ICONWARNING,
-                      daemon=False)
+                           daemon=False)
             sys.exit()
         return imageFolderPath
 
-    def _get_init_file_path(self):
-        if not os.path.exists('.\\config.ini'):
-            with open('.\\config.ini', 'w', encoding='utf-8') as f:
+    def _get_config_file_path(self) -> str:
+        config_path = os.path.join(self._rootPath, 'config.ini')
+        if not os.path.exists(config_path):
+            with open(config_path, 'w', encoding='utf-8-sig') as f:
                 f.write('[Path]\nimageFolderPath=')
-            self.thread_it(win32api.MessageBox, 0, "请先在ini填写图片文件夹路径", '错误', win32con.MB_ICONWARNING, daemon=False)
+            self.thread_it(win32api.MessageBox, 0, "请先在ini填写图片文件夹路径", '错误', win32con.MB_ICONWARNING,
+                           daemon=False)
             sys.exit()
-        return '.\\config.ini'
+        return config_path
 
-    def _get_images_path_converted_list(self):
-        l1=[]
-        l2= [os.path.join(self._imageFolderPath, i) for i in os.listdir(self._imageFolderPath) if
-                  os.path.isfile(os.path.join(self._imageFolderPath, i)) if
-                  os.path.splitext(i)[1].lower() in self._usualImageFormat]
-        for i in l2:
-            if os.path.splitext(i)[1].lower() != '.gif':
-                imageConvertedPath = f'{os.path.splitext(i)[0]}_converted.gif'
-                os.system(f'ffmpeg -i {i} {imageConvertedPath}')
-                os.remove(i)
-                l1.append(imageConvertedPath)
-            else:
-                l1.append(i)
-        return l1
+    def _get_converted_images_path_list(self) -> list:
+        converted_images_path_list = [os.path.join(self._converted_images_folder_path, i) for i in
+                                      os.listdir(self._converted_images_folder_path)]
+        return converted_images_path_list
 
     def _add_emoji_to_wechat(self):
-        for imageConvertedPath in self._imagesPathConvertedList:
+        for imageConvertedPath in self._converted_images_path_list:
             print(imageConvertedPath)
             win32clipboard.OpenClipboard()
             win32clipboard.EmptyClipboard()
@@ -107,6 +116,25 @@ class AddEmojiToWechat:
             MenuItemControl.Click(simulateMove=True)
             time.sleep(1)
 
+    def _convert_images(self):
+        """
+        # 转换图片并将转换后的图片保存到相应文件夹中
+        # 转换后的图片格式为GIF
+        :return: None
+        """
+        # os.path.splitext 返回一个元组，第一个元素是文件名（包括所处的文件夹），第二个元素是文件扩展名
+        # os.path.basename 返回文件名
+        # os.path.join 用于路径拼接
+        original_images_path_list = [os.path.join(self._original_images_folder_path, i) for i in
+                                     os.listdir(self._original_images_folder_path)]
+        for image_path in original_images_path_list:
+            image_type = os.path.splitext(image_path)[1].lower()
+            if image_type in self._usual_image_format_list:
+                converted_image_name = os.path.splitext(os.path.basename(image_path))[0] + '_converted.gif'
+                converted_image_path = os.path.join(self._converted_images_folder_path, converted_image_name)
+                with Image.open(image_path) as img:
+                    # 转换为GIF格式
+                    img.convert('RGB').save(converted_image_path, 'GIF')
+
 
 AddEmojiToWechat()
-
